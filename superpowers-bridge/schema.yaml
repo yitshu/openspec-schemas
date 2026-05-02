@@ -224,6 +224,57 @@ artifacts:
     requires:
       - plan
 
+  - id: retrospective
+    generates: retrospective.md
+    description: Evidence-first retrospective of completed change
+    template: retrospective.md
+    instruction: |
+      Write a retrospective of this change with evidence-first analysis.
+
+      IMPORTANT timing note:
+      - retrospective.md is produced AFTER apply phase completes and
+        verify.md shows no blocking issues. The `requires: [verify]`
+        edge exists only for schema graph purposes; the actual
+        retrospective MUST run on a completed, verified implementation.
+
+      Process (follow these 3 steps):
+
+      1. **Gather evidence**
+         - Run `git log --oneline <base>..HEAD` in the change worktree
+           (or main checkout if the worktree was already merged) to
+           get the commit range
+         - Read brainstorm.md, plan.md, tasks.md in this change
+           directory for plan-vs-actual comparison
+         - If verify.md contains failing items, address them BEFORE
+           writing the retro
+
+      2. **Write the 6 sections** — each claim cites a commit hash,
+         file path, test name, or measurable fact:
+
+         a) **Wins** — what worked well (with evidence)
+         b) **Misses** — what didn't, marked by severity:
+            - 🔴 blocking
+            - 🟡 painful
+            - 📌 nit
+         c) **Plan deviations** — tasks whose scope changed, and why
+         d) **Skill / workflow compliance** — list each skill in this
+            schema's apply phase; mark whether it was actually used,
+            and the reason if skipped
+         e) **Surprises** — assumptions that turned out wrong
+         f) **Promote candidates** — learnings worth moving to
+            long-term memory / CLAUDE.md / schema or skill updates
+
+      3. **Skipping policy**
+         - Trivial single-commit fixes: OK to skip the retrospective
+           entirely. Write a one-liner reason in retrospective.md
+           (e.g. "Skipped: single-commit linter fix, no insights").
+         - Anything else: produce all 6 sections (a placeholder
+           "(none observed)" is fine if a section truly has nothing).
+
+      Write output to retrospective.md using the template structure.
+    requires:
+      - verify
+
 apply:
   requires: [plan]
   tracks: tasks.md
@@ -309,33 +360,6 @@ apply:
        use the Skill tool to invoke
        **superpowers:finishing-a-development-branch** for branch
        cleanup, PR creation, etc.
-
-    **Recommended — Retrospective before archive (non-blocking)**:
-
-    Before archiving the change, it is strongly recommended (but not
-    required) to write a short retrospective at `retrospective.md` in
-    the change directory. A good retrospective raises the quality of
-    every subsequent change because it captures what the diff alone
-    cannot: why decisions were made, what surprised you, and which
-    learnings deserve to be promoted to long-term memory.
-
-    Evidence first, opinion second — every claim should cite a
-    commit, file, or measurable fact. Suggested sections:
-
-    - **Wins** — what worked well (with commit / test evidence)
-    - **Misses** — what didn't work (🔴 blocking / 🟡 painful / 📌 nit)
-    - **Plan deviations** — tasks whose scope changed, and why
-    - **Skill / workflow compliance** — skills invoked vs. deliberately
-      skipped (and the reason)
-    - **Surprises** — assumptions that turned out wrong
-    - **Promote candidates** — learnings to move into long-term memory,
-      CLAUDE.md, or schema/skill updates (classify each candidate so
-      insights don't die silently in the archive)
-
-    If a `workflow-retrospective` skill is available in the environment,
-    it can automate evidence collection; otherwise write the six
-    sections manually. Skipping is acceptable for trivial changes
-    (single-commit fixes) where the overhead exceeds the value.
 
     If any skill is unavailable, fall back to manual implementation
     using the standard task-by-task loop from tasks.md.
