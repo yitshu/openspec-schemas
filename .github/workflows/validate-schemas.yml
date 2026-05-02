@@ -1,0 +1,43 @@
+name: Validate schemas
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    strategy:
+      matrix:
+        bridge:
+          - superpowers-bridge
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install OpenSpec CLI
+        run: npm install -g @fission-ai/openspec
+
+      - name: Set up temp project + install bridge
+        run: |
+          mkdir -p /tmp/test-project/openspec/schemas
+          cp -R ${{ matrix.bridge }} /tmp/test-project/openspec/schemas/
+
+      - name: Validate bridge schema
+        working-directory: /tmp/test-project
+        run: openspec schema validate ${{ matrix.bridge }}
+
+      - name: List schemas (smoke test)
+        working-directory: /tmp/test-project
+        run: openspec schemas
