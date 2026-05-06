@@ -49,7 +49,7 @@ claude plugin install superpowers@claude-plugins-official  # if not already
 
 ## Upgrading an existing install
 
-If your project already has `openspec/schemas/superpowers-bridge/` and you want to pull the latest version (e.g., to get the new "Entry & exit gates" docs and the adopter CLAUDE.md fragment), use one of the upgrade methods below.
+If your project already has `openspec/schemas/superpowers-bridge/` and you want to pull the latest version, use one of the upgrade methods below. The upgrade overwrites the entire `superpowers-bridge/` directory and offers a CLAUDE.md fragment update — see "What the upgrade overwrites" below.
 
 ### Upgrade Method 1: Claude Code one-shot prompt (recommended)
 
@@ -98,17 +98,18 @@ cd ~/your-project && openspec schema validate superpowers-bridge
 rm -rf /tmp/oss-upgrade
 ```
 
-### What the upgrade brings
+### What the upgrade overwrites
 
-| Change type | Content | Manual action needed? |
+| Path | Action | Manual step? |
 |---|---|---|
-| README docs | New "Entry & exit gates" section (this section's neighbor) | None — pure docs, no runtime effect |
-| New `templates/adopters/CLAUDE.md.fragment.*.md` | Copy-paste fragment for adopters' CLAUDE.md | Optional — see step 6 / prompt step 6 above |
-| `schema.yaml` | **Unchanged** | None — schema graph / instructions remain v1 |
+| `openspec/schemas/superpowers-bridge/` | Auto-overwritten — entire directory replaced from upstream (`rm -rf` + `cp -R` in Method 2; equivalent in Method 1) | None |
+| `CLAUDE.md` (project root) | The schema dir ships `templates/adopters/CLAUDE.md.fragment.<locale>.md`; the upgrade procedure diffs your existing CLAUDE.md against this fragment and waits for your ack before inserting / replacing | Yes — review diff, choose insert / replace / keep |
 
-> This upgrade does **NOT** modify `schema.yaml`, so it **does NOT break** any in-flight change's intermediate state. If you're mid-change at any phase (brainstorm / design / specs / ...), you can continue without restarting.
+> The bridge directory is monolithic — you take the whole new version or stay on the old one. There is no per-file opt-in. CLAUDE.md is the only project-root file the upgrade ever touches, and never without your ack.
 
-> If a future upgrade modifies `schema.yaml` structurally (artifact add/remove, PRECHECK changes), the README will gain a version field and a migration guide; v1 → v1.x doc-only changes don't need migration.
+> In-flight changes (any phase: brainstorm / design / specs / ...) remain valid because the schema graph (`requires:` edges, PRECHECKs, artifact dependencies) hasn't changed in v1.x. Existing `verify.md` / `retrospective.md` from before the upgrade are still readable; if you re-run `/opsx:verify` or `/opsx:continue → retrospective` on them, the new template structure applies on overwrite.
+
+> If a future upgrade modifies the schema graph structurally (artifact add/remove, `requires:` edge changes, PRECHECK changes), the README will gain a version field and a migration guide. v1 → v1.x prose-only changes are safe and do not need migration.
 
 ---
 
@@ -322,8 +323,8 @@ Implemented purely via context injection at invocation time, not by modifying sk
 ```bash
 /opsx:ff my-feature    # one-shot: scaffold + brainstorm + proposal + design + specs + tasks + plan
 /opsx:apply            # worktree + subagent-driven-development (with TDD + code-review)
-/opsx:verify           # produces verify.md (5 checks)
-/opsx:continue         # → retrospective (produces retrospective.md, 6 sections)
+/opsx:verify           # produces verify.md (7 checks)
+/opsx:continue         # → retrospective (produces retrospective.md, §0 + 6 sections)
 /opsx:archive          # archive
 ```
 
@@ -337,8 +338,8 @@ Implemented purely via context injection at invocation time, not by modifying sk
 /opsx:continue         # → tasks
 /opsx:continue         # → plan
 /opsx:apply            # → implementation + worktree + subagent-driven-development
-/opsx:verify           # → verify.md (post-apply, runs the 5 checks)
-/opsx:continue         # → retrospective.md (post-verify, evidence-first 6 sections)
+/opsx:verify           # → verify.md (post-apply, runs the 7 checks)
+/opsx:continue         # → retrospective.md (post-verify, evidence-first §0 + 6 sections)
 /opsx:archive
 ```
 
@@ -385,7 +386,7 @@ This schema does NOT support `superpowers:executing-plans` as a fallback. See th
 
 #### 3. Verification — `openspec-verify-change`
 
-Produces `verify.md` from 5 checks: structural validation (`openspec validate --all --json`), task completion, delta-spec sync state, design/specs coherence (non-blocking warning), implementation signal (committed code).
+Produces `verify.md` from 7 checks: structural validation (`openspec validate --all --json`), task completion, delta-spec sync state, design/specs coherence (non-blocking warning), implementation signal (committed code), front-door routing leak detector (non-blocking warning), and deferred-dogfood vs automated-test equivalence. The last check blocks only when `plan.md` has `[~]` deferrals but the equivalence section is empty (gap analysis skipped); otherwise it is informational.
 
 Failures route back to the corresponding artifact for fix; verify can be re-run.
 
@@ -393,7 +394,7 @@ Failures route back to the corresponding artifact for fix; verify can be re-run.
 
 #### 4. Retrospective — `retrospective` artifact (recommended; per Entry & exit gates skip rules, trivial fixes may skip)
 
-Evidence-first 6-section reflection (Wins / Misses / Plan deviations / Skill compliance / Surprises / Promote candidates). Each claim cites a commit / file / measurable fact. The procedure is embedded in the artifact's instruction — no external skill required (Decision 3 in the design spec defers Claude Code plugin packaging to v1.x).
+Evidence-first reflection: §0 Evidence (quantitative front-matter — commit count, diff size, tasks-done ratio, dependencies, validate state, etc.) plus 6 analysis sections (Wins / Misses / Plan deviations / Skill compliance / Surprises / Promote candidates). Each claim cites a commit / file / measurable fact, typically referencing §0 instead of inlining evidence per bullet. The procedure is embedded in the artifact's instruction — no external skill required (Decision 3 in the design spec defers Claude Code plugin packaging to v1.x).
 
 Written **before** opening the PR so retro lands in the same PR diff.
 

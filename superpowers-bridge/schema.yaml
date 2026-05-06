@@ -329,28 +329,101 @@ artifacts:
          - If verify.md contains failing items, address them BEFORE
            writing the retro
 
-      2. **Write the 6 sections** — each claim cites a commit hash,
-         file path, test name, or measurable fact:
+      2. **Write the retrospective sections** — each claim cites
+         a commit hash, file path, test name, or measurable fact.
 
-         a) **Wins** — what worked well (with evidence)
-         b) **Misses** — what didn't, marked by severity:
-            - 🔴 blocking
-            - 🟡 painful
-            - 📌 nit
-         c) **Plan deviations** — tasks whose scope changed, and why
-         d) **Skill / workflow compliance** — list each skill in this
-            schema's apply phase; mark whether it was actually used,
-            and the reason if skipped
-         e) **Surprises** — assumptions that turned out wrong
-         f) **Promote candidates** — learnings worth moving to
-            long-term memory / CLAUDE.md / schema or skill updates
+         The retrospective has §0 Evidence (quantitative front-
+         matter) plus 6 analysis sections (§1–§6). Downstream
+         analysis bullets reference §0 instead of inlining
+         `[evidence: commit X]` per line.
 
-      3. **Skipping policy**
-         - Trivial single-commit fixes: OK to skip the retrospective
-           entirely. Write a one-liner reason in retrospective.md
-           (e.g. "Skipped: single-commit linter fix, no insights").
-         - Anything else: produce all 6 sections (a placeholder
-           "(none observed)" is fine if a section truly has nothing).
+         §0) **Evidence** — quantitative front-matter populated
+             from `git log <base>..HEAD`, `tasks.md`, and
+             verify.md: commit count, diff size (lines/files),
+             tasks-done ratio, active hours, subagent dispatch
+             count, new external dependencies, post-merge bugs,
+             OpenSpec validate state at archive, test coverage
+             signal, and a one-line commit chain.
+
+         §1) **Wins** — what worked well, with evidence
+
+         §2) **Misses** — what didn't, marked by severity:
+             - 🔴 blocking
+             - 🟡 painful
+             - 📌 nit
+
+         §3) **Plan deviations** — tasks whose scope changed, and why
+
+         §4) **Skill / workflow compliance** — list each skill in
+             this schema's apply phase; mark whether it was
+             actually used. For any ✗, fill the
+             `### Deliberately Skipped Skills` subsection per the
+             rules below.
+
+         §5) **Surprises** — assumptions that turned out wrong
+
+         §6) **Promote candidates → long-term learning** — use
+             a `- [ ]` checklist (not a flat table). Each
+             candidate:
+
+             - Title with severity emoji (🔴/🟡/📌) + one-
+               sentence learning
+             - `→ **Promote to** <destination>` (memory /
+               CLAUDE.md / schema / skill / one-off)
+             - Two body lines aligned with the feedback memory
+               schema: `> **Why**: <reason>` and
+               `> **How to apply**: <trigger condition>`
+
+             Unchecked `- [ ]` items represent in-flight
+             candidates that carry into the next cycle's retro
+             for re-evaluation. The checklist + Why/How body
+             shape lets candidates transfer mechanically to
+             `~/.claude/memory/` without re-writing.
+
+         **Skipped-skill rules for §4**:
+
+         The schema was designed with the explicit intent that
+         no apply-phase skill should be skipped — each skill is
+         in the flow for a reason. Default expectation: §4 has
+         every row marked ✓.
+
+         For any skill marked ✗, DO NOT just write a one-line
+         reason. Instead, the `### Deliberately Skipped Skills`
+         subsection must answer three questions per skipped
+         skill:
+
+         - **What was skipped**: the specific skill or sub-step
+         - **Why this cycle**: the concrete cycle condition that
+           triggered the skip. Vague reasons ("not needed", "too
+           small", "no time", "blocked by external dep", "output
+           looked off") are insufficient — name the actual trigger
+           (a specific commit hash, log line, or observed behavior).
+         - **How to prevent recurrence**: which of these the
+           next cycle in the same situation should rely on
+           instead — schema graph fix / skill description
+           tightening / CLAUDE.md trigger / scope-judgment
+           rule / explicit "one-off — schema boundary case" (the
+           last must state why it's a boundary, not just label
+           the exception).
+
+         If multiple cycles skip the same skill with similar
+         "How to prevent" answers, that pattern is a §6 Promote
+         candidate (schema / skill PR motivator). The §4
+         subsection is a feedback loop into schema maintenance —
+         it should make the next retro's subsection shorter, not
+         longer.
+
+      3. **Retrospective skipping policy** (different from §4
+         skill skipping — this is whether to write the retro at
+         all):
+
+         - Trivial single-commit fixes: OK to skip the
+           retrospective entirely. Write a one-liner reason in
+           retrospective.md (e.g. "Skipped: single-commit linter
+           fix, no insights").
+         - Anything else: produce §0 Evidence plus all 6 analysis
+           sections (a placeholder "(none observed)" is fine if
+           a section truly has nothing).
 
       4. **Forward-pointer policy (when facts change after writing)**
 

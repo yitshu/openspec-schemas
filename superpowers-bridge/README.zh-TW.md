@@ -49,7 +49,7 @@ claude plugin install superpowers@claude-plugins-official  # 若尚未安裝
 
 ## 升級已採用本 schema 的專案
 
-如果你的專案早已在 `openspec/schemas/superpowers-bridge/` 安裝過本 schema,並想拿到新版本的文件(例如「進入與離開的判斷」段)與 adopter CLAUDE.md fragment,執行下列其中一種升級方式。
+如果你的專案早已在 `openspec/schemas/superpowers-bridge/` 安裝過本 schema,想拿到最新版本,執行下列其中一種升級方式。升級會整個覆蓋 `superpowers-bridge/` 目錄,並提供 CLAUDE.md 片段更新 — 詳情見下方「升級會【覆蓋】什麼?」。
 
 ### 升級方法 1:Claude Code 一鍵 prompt(推薦)
 
@@ -98,17 +98,18 @@ cd ~/your-project && openspec schema validate superpowers-bridge
 rm -rf /tmp/oss-upgrade
 ```
 
-### 升級會拿到什麼?
+### 升級會【覆蓋】什麼?
 
-| 變動類型 | 內容 | 升級後是否需手動處理 |
+| 路徑 | 行為 | 是否需手動 |
 |---|---|---|
-| README 文件 | 新增「進入與離開的判斷」段(本段下方) | 不需 — 純文件,不影響執行 |
-| 新增 `templates/adopters/CLAUDE.md.fragment.*.md` | 給 adopter 複製進自家 CLAUDE.md 的範本 | 看你要不要插入(見上方步驟 6 / prompt 步驟 6) |
-| `schema.yaml` | **未變動** | 不需 — schema graph / instruction 全部 v1 維持不變 |
+| `openspec/schemas/superpowers-bridge/` | 自動整個目錄覆蓋 — 從 upstream 整包換新(Method 2 是 `rm -rf` + `cp -R`,Method 1 等價) | 不需 |
+| `CLAUDE.md`(專案根) | schema 目錄附 `templates/adopters/CLAUDE.md.fragment.<locale>.md` 片段;升級流程會把你的 CLAUDE.md 跟此片段 diff 給你看,等你 ack 才插入或更新 | 需要 — 確認 diff,選擇插入 / 取代 / 保留現有 |
 
-> 本次升級**不**動 schema.yaml,**不會破壞**現有 change 的中間狀態。如果你正在某個 change 的 brainstorm / design / specs / ... 任一 phase,升級後可以直接繼續推進。
+> bridge 目錄是 monolithic — 要嘛整包換新版,要嘛留舊版,**沒有逐檔 opt-in**。CLAUDE.md 是升級流程唯一會碰專案根目錄的檔案,而且永遠等你 ack。
 
-> 未來若 schema.yaml 結構性變動(增刪 artifact、改 PRECHECK 等),會在 README 上方加版本欄位 + 提供 migration guide;v1 → v1.x 的純文件改動不需 migration。
+> In-flight change(任一 phase:brainstorm / design / specs / ...)仍合法 — schema graph(`requires:` edges、PRECHECKs、artifact 依賴)在 v1.x 沒有變動。升級前產出的 `verify.md` / `retrospective.md` 仍可讀;若對它們重跑 `/opsx:verify` 或 `/opsx:continue → retrospective`,會用新 template 結構覆蓋。
+
+> 未來若 schema graph 結構性變動(增刪 artifact、改 `requires:` edges、PRECHECK 變動),會在 README 上方加版本欄位 + 提供 migration guide;v1 → v1.x 純 instruction prose 改動安全,不需 migration。
 
 ---
 
@@ -322,8 +323,8 @@ Superpowers skill 有預設輸出路徑(例如 brainstorming 寫到 `docs/superp
 ```bash
 /opsx:ff my-feature    # 一條龍:scaffold + brainstorm + proposal + design + specs + tasks + plan
 /opsx:apply            # worktree + subagent-driven-development(含 TDD + code-review)
-/opsx:verify           # 產出 verify.md(5 項檢查)
-/opsx:continue         # → retrospective(產出 retrospective.md,6 sections)
+/opsx:verify           # 產出 verify.md(7 項檢查)
+/opsx:continue         # → retrospective(產出 retrospective.md,§0 + 6 sections)
 /opsx:archive          # 封存
 ```
 
@@ -337,8 +338,8 @@ Superpowers skill 有預設輸出路徑(例如 brainstorming 寫到 `docs/superp
 /opsx:continue         # → tasks
 /opsx:continue         # → plan
 /opsx:apply            # → 實作 + worktree + subagent-driven-development
-/opsx:verify           # → verify.md(post-apply,跑 5 項檢查)
-/opsx:continue         # → retrospective.md(post-verify,evidence-first 6 sections)
+/opsx:verify           # → verify.md(post-apply,跑 7 項檢查)
+/opsx:continue         # → retrospective.md(post-verify,evidence-first §0 + 6 sections)
 /opsx:archive
 ```
 
@@ -385,7 +386,7 @@ Main agent 讀 `plan.md`,為每個 micro-task 派發 fresh subagent。每個 sub
 
 #### 3. Verification — `openspec-verify-change`
 
-產出 `verify.md`,跑 5 項檢查:結構驗證(`openspec validate --all --json`)、task 完成度、delta-spec sync 狀態、design/specs 一致性(non-blocking warning)、實作信號(commit 狀態)。
+產出 `verify.md`,跑 7 項檢查:結構驗證(`openspec validate --all --json`)、task 完成度、delta-spec sync 狀態、design/specs 一致性(non-blocking warning)、實作信號(commit 狀態)、front-door routing leak detector(non-blocking warning)、以及 deferred-dogfood vs automated-test 等價性。最後一項僅在 `plan.md` 有 `[~]` 但等價性章節空白(gap 分析被跳過)時才 block,其他情境屬 informational。
 
 失敗會回到對應 artifact 修正後重跑 verify。
 
@@ -393,7 +394,7 @@ Main agent 讀 `plan.md`,為每個 micro-task 派發 fresh subagent。每個 sub
 
 #### 4. Retrospective — `retrospective` artifact(建議,依 Entry & exit gates 的 skip 規則 trivial fix 可跳)
 
-Evidence-first 6 段反思(Wins / Misses / Plan deviations / Skill compliance / Surprises / Promote candidates)。每個 claim 引用 commit / file / 可量化事實。procedure 直接內嵌在 artifact instruction —— 不依賴外部 skill(Decision 3 in 設計 spec:Claude Code plugin 化延後到 v1.x)。
+Evidence-first 反思:§0 Evidence(量化前置數據 —— commit 數、diff 大小、tasks done 比例、新依賴、validate 狀態等)加上 6 段分析(Wins / Misses / Plan deviations / Skill compliance / Surprises / Promote candidates)。每個 claim 引用 commit / file / 可量化事實,通常指向 §0 而非每行 inline 證據。procedure 直接內嵌在 artifact instruction —— 不依賴外部 skill(Decision 3 in 設計 spec:Claude Code plugin 化延後到 v1.x)。
 
 在開 PR **之前**寫好,讓 retro 跟其他 artifact 一起落在同一個 PR diff。
 
