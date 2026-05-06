@@ -99,6 +99,27 @@ ls docs/superpowers/specs/*.md 2>/dev/null
 
 ---
 
+## 7. Deferred Manual Dogfood vs Automated Test Equivalence
+
+對 plan.md 中標 `[~]` deferred 的手動 dogfood / smoke task,逐項列出
+等價的自動化測試覆蓋。若沒有等價自動化測試,該項應視為**真正的 gap**
+而非合理 deferral,建議在 retrospective Misses 中記錄。
+
+| Deferred dogfood (plan §) | Equivalent automated test | Coverage assessment | 真正 gap? |
+|---|---|---|---|
+| 例:§11.3 `compose up + curl /actuator/health` | `LinebcIntegrationApplicationTests` (Testcontainers,24s) | Spring context boot + Flyway 跑完 + 主要 bean 注入 | ❌ 已等價覆蓋 |
+| — | — | — | — |
+
+> **判讀規則**:
+> - 「等價」= 自動化測試的 assertion 集合是手動 dogfood 預期 assertion 的超集
+> - 「Coverage assessment」= 列出實際被觸及的 layer (context / DB schema / wiring / HTTP path / etc.)
+> - 任何「真正 gap = ✅」的列,Overall Decision 仍可 PASS,但須在 retrospective 留 follow-up 條目
+
+> **何時可以整節空白**:plan.md 完全沒有 `[~]` 標記的 row 時,本節不需要填(空白即 PASS)。
+> 只要 plan.md 出現任何 `[~]`,本節必須逐項列出,否則 Overall Decision 應降為 FAIL。
+
+---
+
 ## Overall Decision
 
 - [ ] ✅ PASS — 可進入 finishing-a-development-branch 與 archive

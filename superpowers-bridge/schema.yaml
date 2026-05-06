@@ -259,11 +259,34 @@ artifacts:
          of that directory predating schema install. Surfaces the
          leak so the user can decide whether to clean up.
 
+      7. **Deferred dogfood vs automated-test equivalence**:
+
+         If plan.md has any tasks marked `[~]` deferred (manual smoke /
+         dogfood / live-environment checks that weren't run in this
+         cycle), enumerate each in verify.md §7 and identify the
+         equivalent automated test that covers the same assertions.
+
+         If no equivalent automated test exists for a deferred manual
+         check, that row is a real coverage gap — record in
+         retrospective Misses with a follow-up plan, not silently
+         deferred.
+
+         The decision table makes "deferred-but-covered" vs "deferred-
+         and-gapped" visible at archive time, so reviewers can audit
+         completeness without re-deriving the rationale from plan +
+         test files.
+
+         Non-blocking on its own — Overall Decision remains PASS even
+         with identified gaps, provided they're recorded as follow-up.
+         Blocks only if §7 is empty AND plan.md has `[~]` rows (means
+         the gap analysis was skipped, not that gaps don't exist).
+
       Verify MAY be re-run multiple times as the implementation is
       refined — each run overwrites verify.md with current state.
 
       If `openspec-verify-change` skill is unavailable, fall back to
-      running the 5 checks manually and recording results in verify.md.
+      running the numbered checks above manually and recording results
+      in verify.md.
     requires:
       - plan
 
