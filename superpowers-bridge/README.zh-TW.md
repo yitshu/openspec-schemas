@@ -209,6 +209,86 @@ brainstorm ──→ proposal ──→ specs ──→ tasks ──→ plan ─
 | Post-apply | (無) | **verify** + **retrospective** artifacts |
 | 新增 artifacts | — | brainstorm, plan, verify, retrospective |
 
+### Lifecycle(apply 編排 + 時序註記)
+
+上方 Artifact DAG 顯示**檔案存在**依賴。下面這張完整 lifecycle 加上 apply phase 的順序步驟,以及 graph 邊與實際產出時序的**錯位**。
+
+```mermaid
+flowchart TD
+    Start([/opsx:propose · /opsx:new])
+
+    subgraph Plan ["📝 PLANNING — 7 個 artifact"]
+        direction TB
+        BS["<b>brainstorm.md</b><br/><i>superpowers:brainstorming</i>"]
+        PROP["<b>proposal.md</b>"]
+        DES["<b>design.md</b><br/><i>(可選,off critical path)</i>"]
+        SP["<b>specs/**/*.md</b>"]
+        TK["<b>tasks.md</b>"]
+        PL["<b>plan.md</b><br/><i>superpowers:writing-plans</i>"]
+
+        BS --> PROP
+        BS -. 可選 .-> DES
+        PROP --> SP
+        SP --> TK
+        TK --> PL
+        DES -. 參考 .-> TK
+        DES -. 參考 .-> PL
+    end
+
+    subgraph Apply ["⚙️ APPLY — 7 個順序步驟(requires: plan,tracks: tasks.md)"]
+        direction TB
+        A0["<b>0. Pre-flight skill check</b>"]
+        A1["<b>1. Workspace</b><br/><i>using-git-worktrees</i>"]
+        A2["<b>2. Executor</b><br/><i>subagent-driven-development</i><br/>↳ TDD + code-review(傳遞)"]
+        A3["<b>3. Verification</b><br/><i>openspec-verify-change</i> → verify.md"]
+        A4["<b>4. Retrospective</b> → retrospective.md<br/>(PR 之前;hot context)"]
+        A5["<b>5. Archive</b><br/><i>openspec archive -y</i><br/>(sync delta + 搬 folder)"]
+        A6["<b>6. Completion</b><br/><i>finishing-a-development-branch</i><br/>🏁 PR 是最後一步"]
+
+        A0 --> A1 --> A2 --> A3
+        A3 -. blocking → 回去修 .-> A2
+        A3 --> A4 --> A5 --> A6
+    end
+
+    Start --> BS
+    PL ==>|apply.requires: plan| A0
+
+    classDef artifact fill:#e1f5ff,stroke:#0277bd,color:#000
+    classDef optional fill:#fff3e0,stroke:#e65100,stroke-dasharray:5,color:#000
+    classDef step fill:#f3e5f5,stroke:#6a1b9a,color:#000
+    classDef capstone fill:#e8f5e9,stroke:#2e7d32,color:#000
+
+    class BS,PROP,SP,TK,PL artifact
+    class DES optional
+    class A0,A1,A2,A3,A4,A5 step
+    class A6 capstone
+```
+
+ASCII 簡圖(CLI 可讀):
+
+```text
+PLANNING ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  brainstorm.md ──┬─→ proposal.md ──→ specs/**/*.md ──→ tasks.md ──→ plan.md
+                  └─→ design.md(可選,給 tasks/plan 參考)
+                                                                       │
+                          apply.requires: [plan], apply.tracks: tasks  ▼
+APPLY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  0. Pre-flight skill check
+  1. superpowers:using-git-worktrees
+  2. superpowers:subagent-driven-development(+ TDD + code-review 傳遞)
+  3. openspec-verify-change → verify.md ◄┐
+                              │           │ blocking → 回去修
+                              ▼           │
+  4. retrospective.md(PR 之前;hot context)
+  5. openspec archive -y(sync delta + 搬 folder)
+  6. superpowers:finishing-a-development-branch(🏁 PR 是最後一步)
+```
+
+> **時序註記**(完整理由見下方「設計觸點 #6」):
+> - `verify.md` 在 graph 上宣告 `requires: plan`,但實際產在 apply step 3 內。
+> - `retrospective.md` 宣告 `requires: verify`,並依 Step 4 在 PR 開啟**之前**產出 —— PR diff 才會包含完整 archived cycle(所有 artifact 完成、spec 已 sync、change folder 在 `archive/`)。
+> - `requires:` 邊是給 OpenSpec graph 引擎用的「檔案存在」依賴;runtime 順序由 instruction prose 控制。
+
 ### 七個 Superpowers 觸點
 
 | # | Superpowers skill | 掛在哪 | 觸發方式 |
@@ -309,13 +389,21 @@ Main agent 讀 `plan.md`,為每個 micro-task 派發 fresh subagent。每個 sub
 
 失敗會回到對應 artifact 修正後重跑 verify。
 
-#### 4. Completion — `superpowers:finishing-a-development-branch`
+> **Steps 4–6 是 verify 後的 canonical 順序:retro → archive → PR。順序顛倒會產出不完整的 PR(retrospective 跟 archive 變成 merge 後才補的 trailing commits,失去 hot context)。**
 
-確認 tests 全綠、呈現 merge / PR / keep-branch / discard 選項、清理 worktree。
-
-#### 5. Retrospective — `retrospective` artifact(建議,trivial fix 可跳)
+#### 4. Retrospective — `retrospective` artifact(建議,依 Entry & exit gates 的 skip 規則 trivial fix 可跳)
 
 Evidence-first 6 段反思(Wins / Misses / Plan deviations / Skill compliance / Surprises / Promote candidates)。每個 claim 引用 commit / file / 可量化事實。procedure 直接內嵌在 artifact instruction —— 不依賴外部 skill(Decision 3 in 設計 spec:Claude Code plugin 化延後到 v1.x)。
+
+在開 PR **之前**寫好,讓 retro 跟其他 artifact 一起落在同一個 PR diff。
+
+#### 5. Archive — `openspec archive -y`(或 `/opsx:archive`)
+
+把 delta spec sync 到 `openspec/specs/<capability>/spec.md`、把 change 目錄搬到 `openspec/changes/archive/YYYY-MM-DD-<name>/`。在開 PR **之前**跑完,這樣 PR diff 反映完整的 archived cycle 狀態(所有 artifact 完成、spec 已 sync、folder 在 `archive/`)。
+
+#### 6. Completion — `superpowers:finishing-a-development-branch`
+
+確認 tests 全綠、呈現 merge / PR / keep-branch / discard 選項、清理 worktree。**PR 是最後一步** —— 若 retro 或 archive 還沒跑,先補完。
 
 ---
 

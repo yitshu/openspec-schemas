@@ -209,6 +209,86 @@ Differences from `spec-driven`:
 | Post-apply | (none) | **verify** + **retrospective** artifacts |
 | New artifacts | — | brainstorm, plan, verify, retrospective |
 
+### Lifecycle (apply orchestration + timing notes)
+
+The Artifact DAG above shows **file-existence** dependencies. The runtime lifecycle below adds the apply phase's ordered steps and the **timing offsets** between graph edges and actual production order.
+
+```mermaid
+flowchart TD
+    Start([/opsx:propose · /opsx:new])
+
+    subgraph Plan ["📝 PLANNING — 7 artifacts"]
+        direction TB
+        BS["<b>brainstorm.md</b><br/><i>superpowers:brainstorming</i>"]
+        PROP["<b>proposal.md</b>"]
+        DES["<b>design.md</b><br/><i>(optional, off critical path)</i>"]
+        SP["<b>specs/**/*.md</b>"]
+        TK["<b>tasks.md</b>"]
+        PL["<b>plan.md</b><br/><i>superpowers:writing-plans</i>"]
+
+        BS --> PROP
+        BS -. optional .-> DES
+        PROP --> SP
+        SP --> TK
+        TK --> PL
+        DES -. ref .-> TK
+        DES -. ref .-> PL
+    end
+
+    subgraph Apply ["⚙️ APPLY — 7 ordered steps (requires: plan, tracks: tasks.md)"]
+        direction TB
+        A0["<b>0. Pre-flight skill check</b>"]
+        A1["<b>1. Workspace</b><br/><i>using-git-worktrees</i>"]
+        A2["<b>2. Executor</b><br/><i>subagent-driven-development</i><br/>↳ TDD + code-review (transitive)"]
+        A3["<b>3. Verification</b><br/><i>openspec-verify-change</i> → verify.md"]
+        A4["<b>4. Retrospective</b> → retrospective.md<br/>(BEFORE PR; hot context)"]
+        A5["<b>5. Archive</b><br/><i>openspec archive -y</i><br/>(sync delta + move folder)"]
+        A6["<b>6. Completion</b><br/><i>finishing-a-development-branch</i><br/>🏁 PR is LAST"]
+
+        A0 --> A1 --> A2 --> A3
+        A3 -. blocking → fix .-> A2
+        A3 --> A4 --> A5 --> A6
+    end
+
+    Start --> BS
+    PL ==>|apply.requires: plan| A0
+
+    classDef artifact fill:#e1f5ff,stroke:#0277bd,color:#000
+    classDef optional fill:#fff3e0,stroke:#e65100,stroke-dasharray:5,color:#000
+    classDef step fill:#f3e5f5,stroke:#6a1b9a,color:#000
+    classDef capstone fill:#e8f5e9,stroke:#2e7d32,color:#000
+
+    class BS,PROP,SP,TK,PL artifact
+    class DES optional
+    class A0,A1,A2,A3,A4,A5 step
+    class A6 capstone
+```
+
+ASCII fallback (CLI-readable):
+
+```text
+PLANNING ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  brainstorm.md ──┬─→ proposal.md ──→ specs/**/*.md ──→ tasks.md ──→ plan.md
+                  └─→ design.md (optional, reference for tasks/plan)
+                                                                       │
+                          apply.requires: [plan], apply.tracks: tasks  ▼
+APPLY ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  0. Pre-flight skill check
+  1. superpowers:using-git-worktrees
+  2. superpowers:subagent-driven-development (+ TDD + code-review transitive)
+  3. openspec-verify-change → verify.md ◄┐
+                              │           │ blocking → fix
+                              ▼           │
+  4. retrospective.md (BEFORE PR; hot context)
+  5. openspec archive -y (sync delta + move folder)
+  6. superpowers:finishing-a-development-branch (🏁 PR is LAST)
+```
+
+> **Timing notes** (full rationale in "Six design touches" #6):
+> - `verify.md` declares `requires: plan` in the graph but is actually produced inside apply step 3.
+> - `retrospective.md` declares `requires: verify` and per Step 4 is produced **before** the PR opens — so the PR diff includes the complete archived cycle (all artifacts done, spec synced, change folder under `archive/`).
+> - The `requires:` edges are file-existence dependencies for OpenSpec's graph engine; runtime ordering lives in instruction prose.
+
 ### Seven Superpowers touchpoints
 
 | # | Superpowers skill | Where it's invoked | Trigger |
@@ -309,13 +389,21 @@ Produces `verify.md` from 5 checks: structural validation (`openspec validate --
 
 Failures route back to the corresponding artifact for fix; verify can be re-run.
 
-#### 4. Completion — `superpowers:finishing-a-development-branch`
+> **Steps 4–6 are the canonical post-verify sequence: retro → archive → PR. Reordering produces incomplete PRs (retrospective + archive land as trailing post-merge commits, losing hot context).**
 
-Confirms tests are green, presents merge / PR / keep-branch / discard options, cleans up the worktree.
-
-#### 5. Retrospective — `retrospective` artifact (recommended; trivial fixes may skip)
+#### 4. Retrospective — `retrospective` artifact (recommended; per Entry & exit gates skip rules, trivial fixes may skip)
 
 Evidence-first 6-section reflection (Wins / Misses / Plan deviations / Skill compliance / Surprises / Promote candidates). Each claim cites a commit / file / measurable fact. The procedure is embedded in the artifact's instruction — no external skill required (Decision 3 in the design spec defers Claude Code plugin packaging to v1.x).
+
+Written **before** opening the PR so retro lands in the same PR diff.
+
+#### 5. Archive — `openspec archive -y` (or `/opsx:archive`)
+
+Syncs delta specs into `openspec/specs/<capability>/spec.md` and moves the change folder to `openspec/changes/archive/YYYY-MM-DD-<name>/`. Run **before** the PR opens so the diff reflects the complete archived cycle (all artifacts done, spec synced, folder under archive/).
+
+#### 6. Completion — `superpowers:finishing-a-development-branch`
+
+Confirms tests are green, presents merge / PR / keep-branch / discard options, cleans up the worktree. **PR is the last step** — if retro or archive haven't been done, finish them first.
 
 ---
 
