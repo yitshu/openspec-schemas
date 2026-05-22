@@ -23,11 +23,11 @@
 Install the superpowers-bridge schema for OpenSpec into this project:
 
 1. Verify the project has an `openspec/` directory (run `openspec init` if missing).
-2. Clone https://github.com/JiangWay/openspec-schemas to a temp dir.
+2. Clone https://github.com/yitshu/openspec-schemas to a temp dir.
 3. Copy the `superpowers-bridge/` subdirectory to `openspec/schemas/superpowers-bridge/`.
 4. Run `openspec schema validate superpowers-bridge` to verify.
 5. Run `openspec schemas` and confirm `superpowers-bridge` is listed.
-6. If a CLAUDE.md exists at the project root, ask me whether to insert the workflow-routing fragment from `openspec/schemas/superpowers-bridge/templates/adopters/CLAUDE.md.fragment.<locale>.md` (auto-detect locale from existing CLAUDE.md content; default zh-TW for Traditional Chinese, no suffix for English). If I say yes, append the fragment as a new section. If no CLAUDE.md exists, skip.
+6. If a CLAUDE.md exists at the project root, ask me whether to insert the workflow-routing fragment from `openspec/schemas/superpowers-bridge/templates/adopters/CLAUDE.md.fragment.<locale>.md` (auto-detect locale from existing CLAUDE.md content; default zh-CN for Simplified Chinese, zh-TW for Traditional Chinese, no suffix for English). If I say yes, append the fragment as a new section. If no CLAUDE.md exists, skip.
 7. Clean up the temp directory.
 8. Verify Superpowers plugin is installed by running `claude plugin list`.
    If not listed, run `claude plugin install superpowers@claude-plugins-official`.
@@ -42,6 +42,7 @@ cp -R /tmp/oss/superpowers-bridge ~/your-project/openspec/schemas/superpowers-br
 
 # 可选：将工作流路由片段插入 CLAUDE.md
 # cat /tmp/oss/superpowers-bridge/templates/adopters/CLAUDE.md.fragment.md       # English
+# cat /tmp/oss/superpowers-bridge/templates/adopters/CLAUDE.md.fragment.zh-CN.md # zh-CN
 # cat /tmp/oss/superpowers-bridge/templates/adopters/CLAUDE.md.fragment.zh-TW.md # zh-TW
 
 rm -rf /tmp/oss
@@ -77,7 +78,7 @@ Upgrade the superpowers-bridge schema in this project:
 8. Show me the final state.
 ```
 
-> `<locale>` 在 CLAUDE.md 为繁体中文时默认为 `zh-TW`，英文时无后缀。Claude 会从现有 CLAUDE.md 内容自动检测。
+> `<locale>` 在 CLAUDE.md 为简体中文时默认为 `zh-CN`，繁体中文时默认为 `zh-TW`，英文时无后缀。Claude 会从现有 CLAUDE.md 内容自动检测。
 
 ### 升级方法 2：手动 bash
 

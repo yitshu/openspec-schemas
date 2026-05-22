@@ -77,7 +77,7 @@ Upgrade the superpowers-bridge schema in this project:
 8. Show me the final state.
 ```
 
-> `<locale>` defaults to `zh-TW` if your CLAUDE.md is in Traditional Chinese, or no suffix (English). Claude detects from existing CLAUDE.md content.
+> `<locale>` defaults to `zh-CN` if your CLAUDE.md is in Simplified Chinese,  or `zh-TW` if your CLAUDE.md is in Traditional Chinese, or no suffix (English). Claude detects from existing CLAUDE.md content.
 
 ### Upgrade Method 2: Manual bash
 

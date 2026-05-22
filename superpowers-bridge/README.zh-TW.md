@@ -77,7 +77,7 @@ Upgrade the superpowers-bridge schema in this project:
 8. Show me the final state.
 ```
 
-> `<locale>` 預設 `zh-TW`(若你 CLAUDE.md 是繁中)或省略(英文)。Claude 會依你 CLAUDE.md 的既有語言判斷。
+> `<locale>` 預設 `zh-CN`(若你 CLAUDE.md 是繁中)或简中或省略(英文)。Claude 會依你 CLAUDE.md 的既有語言判斷。
 
 ### 升級方法 2:手動 bash
 
