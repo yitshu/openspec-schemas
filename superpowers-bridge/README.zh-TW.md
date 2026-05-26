@@ -1,6 +1,6 @@
 # superpowers-bridge Schema
 
-[English](./README.md) · [繁體中文](./README.zh-TW.md)
+[English](./README.md) · [繁體中文](./README.zh-TW.md) · [简体中文](./README.zh-CN.md)
 
 [![Schema Structure](https://github.com/JiangWay/openspec-schemas/actions/workflows/validate-schemas.yml/badge.svg?branch=main)](https://github.com/JiangWay/openspec-schemas/actions/workflows/validate-schemas.yml)
 [![Upstream Drift](https://img.shields.io/github/issues-search/JiangWay/openspec-schemas?query=is%3Aopen%20label%3Aupstream-version-check&label=Upstream%20Drift&color=yellow)](https://github.com/JiangWay/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check)
@@ -77,7 +77,7 @@ Upgrade the superpowers-bridge schema in this project:
 8. Show me the final state.
 ```
 
-> `<locale>` 預設 `zh-TW`(若你 CLAUDE.md 是繁中)或省略(英文)。Claude 會依你 CLAUDE.md 的既有語言判斷。
+> `<locale>` 預設 `zh-CN`(若你 CLAUDE.md 是繁中)或简中或省略(英文)。Claude 會依你 CLAUDE.md 的既有語言判斷。
 
 ### 升級方法 2:手動 bash
 

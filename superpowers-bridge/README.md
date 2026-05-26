@@ -1,6 +1,6 @@
 # superpowers-bridge Schema
 
-[English](./README.md) · [繁體中文](./README.zh-TW.md)
+[English](./README.md) · [繁體中文](./README.zh-TW.md) · [简体中文](./README.zh-CN.md)
 
 [![Schema Structure](https://github.com/JiangWay/openspec-schemas/actions/workflows/validate-schemas.yml/badge.svg?branch=main)](https://github.com/JiangWay/openspec-schemas/actions/workflows/validate-schemas.yml)
 [![Upstream Drift](https://img.shields.io/github/issues-search/JiangWay/openspec-schemas?query=is%3Aopen%20label%3Aupstream-version-check&label=Upstream%20Drift&color=yellow)](https://github.com/JiangWay/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check)
@@ -77,7 +77,7 @@ Upgrade the superpowers-bridge schema in this project:
 8. Show me the final state.
 ```
 
-> `<locale>` defaults to `zh-TW` if your CLAUDE.md is in Traditional Chinese, or no suffix (English). Claude detects from existing CLAUDE.md content.
+> `<locale>` defaults to `zh-CN` if your CLAUDE.md is in Simplified Chinese,  or `zh-TW` if your CLAUDE.md is in Traditional Chinese, or no suffix (English). Claude detects from existing CLAUDE.md content.
 
 ### Upgrade Method 2: Manual bash
 
