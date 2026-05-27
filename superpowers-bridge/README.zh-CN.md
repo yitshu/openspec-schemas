@@ -2,8 +2,8 @@
 
 [English](./README.md) · [繁體中文](./README.zh-TW.md) · [简体中文](./README.zh-CN.md)
 
-[![Schema Structure](https://github.com/JiangWay/openspec-schemas/actions/workflows/validate-schemas.yml/badge.svg?branch=main)](https://github.com/JiangWay/openspec-schemas/actions/workflows/validate-schemas.yml)
-[![Upstream Drift](https://img.shields.io/github/issues-search/JiangWay/openspec-schemas?query=is%3Aopen%20label%3Aupstream-version-check&label=Upstream%20Drift&color=yellow)](https://github.com/JiangWay/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check)
+[![Schema Structure](https://github.com/yitshu/openspec-schemas/actions/workflows/validate-schemas.yml/badge.svg?branch=main)](https://github.com/yitshu/openspec-schemas/actions/workflows/validate-schemas.yml)
+[![Upstream Drift](https://img.shields.io/github/issues-search/JiangWay/openspec-schemas?query=is%3Aopen%20label%3Aupstream-version-check&label=Upstream%20Drift&color=yellow)](https://github.com/yitshu/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check)
 [![OpenSpec baseline](https://img.shields.io/badge/OpenSpec_baseline-1.3.1-0277bd)](#compatibility)
 [![Superpowers baseline](https://img.shields.io/badge/Superpowers_baseline-v5.1.0-0277bd)](#compatibility)
 
@@ -37,7 +37,7 @@ Install the superpowers-bridge schema for OpenSpec into this project:
 ### 方法 2：手动 bash（CI / 非 Claude 环境）
 
 ```bash
-git clone https://github.com/JiangWay/openspec-schemas /tmp/oss
+git clone https://github.com/yitshu/openspec-schemas /tmp/oss
 cp -R /tmp/oss/superpowers-bridge ~/your-project/openspec/schemas/superpowers-bridge
 
 # 可选：将工作流路由片段插入 CLAUDE.md
@@ -65,7 +65,7 @@ claude plugin install superpowers@claude-plugins-official  # 如果尚未安装
 Upgrade the superpowers-bridge schema in this project:
 
 1. Verify `openspec/schemas/superpowers-bridge/` already exists (upgrade, not fresh install). If missing, abort and tell me to use the install instructions instead.
-2. Clone https://github.com/JiangWay/openspec-schemas to a temp dir.
+2. Clone https://github.com/yitshu/openspec-schemas to a temp dir.
 3. Show me the diff between the local `openspec/schemas/superpowers-bridge/` and the cloned `superpowers-bridge/` (use `diff -ruN`). Wait for my ack before overwriting.
 4. After my ack, overwrite the local schema dir with the cloned one.
 5. Run `openspec schema validate superpowers-bridge` to verify.
@@ -84,7 +84,7 @@ Upgrade the superpowers-bridge schema in this project:
 
 ```bash
 # 1. 获取最新包
-git clone https://github.com/JiangWay/openspec-schemas /tmp/oss-upgrade
+git clone https://github.com/yitshu/openspec-schemas /tmp/oss-upgrade
 
 # 2. 先查看 diff（不要盲目覆盖）
 diff -ruN ~/your-project/openspec/schemas/superpowers-bridge /tmp/oss-upgrade/superpowers-bridge
@@ -494,7 +494,7 @@ LLM 无需解释时序文案——它运行命令并读取结果。这是问题 
 | 层级 | 机制 | 捕获内容 | 触发时机 |
 |---|---|---|---|
 | 结构 | 每次 push/PR 运行 [`validate-schemas.yml`](../.github/workflows/validate-schemas.yml)；每周对照最新 OpenSpec 运行 [`version-check.yml`](../.github/workflows/version-check.yml) | Schema 图断裂（字段重命名、移除的 `requires:` 边、PRECHECK 语法变更） | CI 运行显示红灯 |
-| 漂移通知 | [`version-check.yml`](../.github/workflows/version-check.yml) 每周运行，将上述基线与最新 npm / GitHub 发布对比 | 锁定版本 ≠ 最新上游版本 | 为人工审查创建/更新[带标签的漂移 issue](https://github.com/JiangWay/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check)（工作流保持绿灯——漂移是正常现象，非失败） |
+| 漂移通知 | [`version-check.yml`](../.github/workflows/version-check.yml) 每周运行，将上述基线与最新 npm / GitHub 发布对比 | 锁定版本 ≠ 最新上游版本 | 为人工审查创建/更新[带标签的漂移 issue](https://github.com/yitshu/openspec-schemas/issues?q=is%3Aopen+label%3Aupstream-version-check)（工作流保持绿灯——漂移是正常现象，非失败） |
 | 端到端工作流 | **未自动化** | Superpowers 技能内部的行为变更（重命名、修改 PRECHECK 语义的文案重写、传递依赖变更）；OpenSpec 引擎的细微语义偏移 | 人工在漂移 issue 触发时阅读上游发布说明 |
 
 "基线截至"日期在维护者手动对列出版本重新运行完整周期并确认无退化时才更新。在此之前，该日期仅代表人工认证，而非自动化测试通过。
